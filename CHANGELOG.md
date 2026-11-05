@@ -2,6 +2,12 @@
 
 Every release, newest first, with what changed and what a product must do to upgrade. Versions follow `AGENTS.md`: while at `0.x`, a breaking change bumps the minor number.
 
+## v0.4.3 (2026-11-05)
+
+- **Fixed: rows of empty cells counted toward the CSV row limit.** `read_csv` stopped after `MAX_ROWS` + 2 records of any kind, though its documentation (and the Excel reader) counts only non-blank rows. A file with formatted but empty rows (`,,,`) in the middle lost the rows after the cut-off without any error. Reading now stops one non-blank row past the limit; rows of empty cells are still returned with their row numbers.
+
+**Upgrading from v0.4.2:** depend on v0.4.3 by the commit its tag points to. No code or schema changes needed. A product that limits rows should count only non-blank ones, as the engine now does.
+
 ## v0.4.2 (2026-11-05)
 
 - **Security: `calamine` 0.37 → 0.38** for [RUSTSEC-2026-0436](https://rustsec.org/advisories/RUSTSEC-2026-0436): a crafted `.xls` or `.xlsb` file could make the Excel parser panic or allocate without bound. `XlsxReader` already parses in a child process with memory and CPU limits, so the impact was a refused file rather than a crashed server, but the fix closes it at the source.
