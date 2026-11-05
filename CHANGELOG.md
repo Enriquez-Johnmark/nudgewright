@@ -2,6 +2,12 @@
 
 Every release, newest first, with what changed and what a product must do to upgrade. Versions follow `AGENTS.md`: while at `0.x`, a breaking change bumps the minor number.
 
+## v0.4.1 (2026-11-05)
+
+- **New: `Logins::started_at(session)`** tells a product when a live session began (`None` for an ended, expired or unknown one), so it can ask for a fresh login before a sensitive change, such as payment details.
+
+**Upgrading from v0.4.0:** depend on v0.4.1 by the commit its tag points to. No code or schema changes needed.
+
 ## v0.4.0 (2026-10-24)
 
 Fixes a message deferred by a pre-send check being stuck for good, and lets a product hold an approved message until a set time (say, sending hours) without it expiring meanwhile. Breaking, because `CheckFailed` gains a variant.
