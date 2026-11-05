@@ -66,3 +66,20 @@ fn reading_stops_one_row_past_the_limit() {
 
     assert_eq!(rows.len(), MAX_ROWS + 2);
 }
+
+#[test]
+fn rows_of_empty_cells_dont_count_toward_the_limit() {
+    // As Excel saves a sheet with formatted but empty rows.
+    let data = "Reyes,ana@reyes.test\n";
+    let csv = format!(
+        "Name,Email\n{}{}{}",
+        data.repeat(300),
+        ",\n".repeat(100),
+        data.repeat(200)
+    );
+
+    let rows = read_csv(csv.as_bytes()).unwrap();
+
+    let named = rows.iter().filter(|(_, cells)| cells[0] == "Reyes").count();
+    assert_eq!(named, 500);
+}

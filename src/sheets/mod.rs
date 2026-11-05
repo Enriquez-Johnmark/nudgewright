@@ -27,7 +27,7 @@ pub enum SheetError {
 /// A CSV file's records, each with its row number as a spreadsheet shows
 /// it (the first line is row 1). The file may be UTF-8, with or without a
 /// byte-order mark, or Windows-1252 as older Excel saves it. Reading stops
-/// one row past [`MAX_ROWS`].
+/// one non-blank row past [`MAX_ROWS`]; rows of empty cells don't count.
 pub fn read_csv(bytes: &[u8]) -> Result<Vec<(usize, Vec<String>)>, SheetError> {
     if bytes.len() > MAX_BYTES {
         return Err(SheetError::TooLarge);
@@ -45,6 +45,7 @@ pub fn read_csv(bytes: &[u8]) -> Result<Vec<(usize, Vec<String>)>, SheetError> {
         .flexible(true)
         .from_reader(text.as_bytes());
     let mut records = Vec::new();
+    let mut non_blank = 0;
     // Rows as a spreadsheet numbers them: blank lines count (the csv crate
     // skips them), line breaks inside a quoted cell don't, and \r, \n and
     // \r\n all end a line.
@@ -63,10 +64,11 @@ pub fn read_csv(bytes: &[u8]) -> Result<Vec<(usize, Vec<String>)>, SheetError> {
         line += line_breaks(bytes.get(counted_to..start).unwrap_or_default()).saturating_sub(breaks_in_previous);
         counted_to = start;
         breaks_in_previous = record.iter().map(|cell| line_breaks(cell.as_bytes())).sum();
+        non_blank += usize::from(record.iter().any(|cell| !cell.is_empty()));
         records.push((line, record.iter().map(str::to_owned).collect()));
-        // The header, the allowed rows, and one more to report "too many",
-        // as for Excel files.
-        if records.len() > MAX_ROWS + 1 {
+        // The header, the allowed non-blank rows, and one more to report
+        // "too many", as for Excel files.
+        if non_blank > MAX_ROWS + 1 {
             break;
         }
     }
