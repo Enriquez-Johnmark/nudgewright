@@ -274,3 +274,22 @@ async fn a_login_draft_expires_with_its_link(pool: PgPool) {
         .unwrap();
     assert_eq!(expires, Some(clock.now_plus(LINK_LIFETIME)));
 }
+
+#[sqlx::test]
+async fn a_product_can_tell_when_a_session_started(pool: PgPool) {
+    use nudgewright::clock::Clock as _;
+    let clock = clock();
+    account(&pool, &clock).await;
+    let logins = Logins::new(pool.clone(), clock.clone());
+    let token = token_for(&logins, &pool, "ana@reyes.test").await;
+    let secret = logins.log_in(&token).await.unwrap().unwrap();
+    let started = clock.now();
+    clock.advance(Duration::hours(2));
+
+    let known = logins.started_at(&secret).await.unwrap();
+    logins.log_out(&secret).await.unwrap();
+    let ended = logins.started_at(&secret).await.unwrap();
+
+    assert_eq!(known, Some(started));
+    assert_eq!(ended, None);
+}

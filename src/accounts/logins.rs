@@ -17,7 +17,7 @@ use std::sync::Arc;
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::PgPool;
-use time::Duration;
+use time::{Duration, OffsetDateTime};
 
 use super::{MemberId, Role};
 use crate::audit::{self, AuditEvent};
@@ -267,6 +267,19 @@ impl Logins {
             email: row.email,
             role: Role::parse(&row.role),
         }))
+    }
+
+    /// When the live session `session` started, so a product can ask for a
+    /// fresh login before a sensitive change; `None` for an ended,
+    /// expired or unknown session.
+    pub async fn started_at(&self, session: &str) -> Result<Option<OffsetDateTime>, LoginError> {
+        Ok(sqlx::query_scalar!(
+            "select created_at from account_sessions where session_hash = $1 and expires_at > $2",
+            &hash(session)[..],
+            self.clock.now(),
+        )
+        .fetch_optional(&self.pool)
+        .await?)
     }
 
     /// Ends a session.
