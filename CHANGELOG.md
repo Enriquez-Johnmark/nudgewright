@@ -2,6 +2,12 @@
 
 Every release, newest first, with what changed and what a product must do to upgrade. Versions follow `AGENTS.md`: while at `0.x`, a breaking change bumps the minor number.
 
+## v0.4.2 (2026-11-05)
+
+- **Security: `calamine` 0.37 → 0.38** for [RUSTSEC-2026-0436](https://rustsec.org/advisories/RUSTSEC-2026-0436): a crafted `.xls` or `.xlsb` file could make the Excel parser panic or allocate without bound. `XlsxReader` already parses in a child process with memory and CPU limits, so the impact was a refused file rather than a crashed server, but the fix closes it at the source.
+
+**Upgrading from v0.4.1:** depend on v0.4.2 by the commit its tag points to. No code or schema changes needed.
+
 ## v0.4.1 (2026-11-05)
 
 - **New: `Logins::started_at(session)`** tells a product when a live session began (`None` for an ended, expired or unknown one), so it can ask for a fresh login before a sensitive change, such as payment details.
