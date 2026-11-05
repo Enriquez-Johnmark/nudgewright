@@ -65,8 +65,8 @@ Postgres is the only infrastructure: no Redis, no separate queue.
 
 ```toml
 [dependencies]
-# v0.4.1, pinned to the commit its tag points to
-nudgewright = { version = "0.4.1", git = "https://github.com/Enriquez-Johnmark/nudgewright", rev = "efe74dc5bfd405d1ae8c2beef73f14b6e28251a3" }
+# v0.4.2, pinned to the commit its tag points to
+nudgewright = { version = "0.4.2", git = "https://github.com/Enriquez-Johnmark/nudgewright", rev = "b8184012f205de606256b846efa7b97ee1a670ad" }
 ```
 
 Run the engine's migrations next to your own (`nudgewright::MIGRATOR.run(&pool)`), give it your pre-send rules by implementing `PreSendCheck`, and drive the loop from your scheduler. [`examples/approve_and_send.rs`](examples/approve_and_send.rs) is the whole loop in 40 lines:
