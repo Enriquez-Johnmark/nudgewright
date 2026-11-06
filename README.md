@@ -7,11 +7,31 @@ It powers a family of products for small businesses in the Philippines, each in 
 | Product | What it chases | Status |
 |---|---|---|
 | [Kompleto](https://github.com/Enriquez-Johnmark/kompleto) ("complete") | Bookkeepers' clients, for the documents behind their BIR filings | Built |
-| Balanse ("balance") | Customers, politely, about unpaid invoices | Next |
+| [Balanse](https://github.com/Enriquez-Johnmark/balanse) ("balance") | Customers, politely, about unpaid invoices | Built |
 | Kotasyon ("quotation") | Leads, about quotes a service business sent | Planned |
 | Biyahe ("trip") | Travelers, about tour inquiries | Planned |
 | Iskedyul ("schedule") | Patients, about clinic and dental appointments | Planned |
 | Rekord ("record") | Online sellers, about their sales records and BIR deadlines | Planned |
+
+## See it working
+
+![The approval and exactly-once guarantees, each with a passing test](docs/showcase/tests.png)
+
+A [one-minute walkthrough video](docs/showcase/walkthrough.mp4) runs the whole loop for real: the [example](examples/approve_and_send.rs) drafts a message, approves exactly what was seen and sends it once, the email arrives in a local mail catcher, and the outbox tests prove each promise. More in [`docs/showcase/`](docs/showcase/).
+
+| | |
+|---|---|
+| ![The example's code: draft, approve, send once](docs/showcase/code.png) | ![The example run: one message sent, none failed, blocked or unconfirmed](docs/showcase/example.png) |
+| The whole loop in code | Run for real: sent once |
+
+### Built on it
+
+Each product adds only its own pages, wording and rules; the engine keeps the promises.
+
+| [Kompleto](https://github.com/Enriquez-Johnmark/kompleto): documents for bookkeepers | [Balanse](https://github.com/Enriquez-Johnmark/balanse): polite payment follow-up |
+|---|---|
+| ![Kompleto's dashboard](https://raw.githubusercontent.com/Enriquez-Johnmark/kompleto/main/docs/showcase/desktop-1-dashboard.png) | ![Balanse's dashboard](https://raw.githubusercontent.com/Enriquez-Johnmark/balanse/main/docs/showcase/desktop-1-dashboard.png) |
+| [Walkthrough video](https://github.com/Enriquez-Johnmark/kompleto/blob/main/docs/showcase/walkthrough.mp4) | [Walkthrough video](https://github.com/Enriquez-Johnmark/balanse/blob/main/docs/showcase/walkthrough.mp4) |
 
 ## The loop
 
@@ -86,6 +106,8 @@ cp .env.example .env          # for sqlx-cli
 sqlx migrate run
 cargo test
 ```
+
+`node scripts/showcase.mjs` remakes the screenshots and the video in `docs/showcase/` (see its README).
 
 The rules for working on the engine (scope, safety rules, versions, commits) are in [`AGENTS.md`](AGENTS.md); design decisions are in [`docs/adr/`](docs/adr/); release notes in [`CHANGELOG.md`](CHANGELOG.md).
 
