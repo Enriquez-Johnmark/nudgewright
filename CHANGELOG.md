@@ -2,6 +2,12 @@
 
 Every release, newest first, with what changed and what a product must do to upgrade. Versions follow `AGENTS.md`: while at `0.x`, a breaking change bumps the minor number.
 
+## v0.4.4 (2026-11-06)
+
+- **New: `Outbox::forget(tenant, ids)`** deletes those messages that are the tenant's and finished (sent, blocked, unconfirmed, expired or cancelled), for a product whose retention period for them has ended, and returns how many. A message that could still go out (a Draft, approved, sending, or awaiting a retry) is kept, as is any other tenant's.
+
+**Upgrading from v0.4.3:** depend on v0.4.4 by the commit its tag points to. No code or schema changes needed.
+
 ## v0.4.3 (2026-11-05)
 
 - **Fixed: rows of empty cells counted toward the CSV row limit.** `read_csv` stopped after `MAX_ROWS` + 2 records of any kind, though its documentation (and the Excel reader) counts only non-blank rows. A file with formatted but empty rows (`,,,`) in the middle lost the rows after the cut-off without any error. Reading now stops one non-blank row past the limit; rows of empty cells are still returned with their row numbers.
