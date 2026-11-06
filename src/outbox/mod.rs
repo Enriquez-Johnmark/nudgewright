@@ -435,6 +435,25 @@ impl Outbox {
         Ok(())
     }
 
+    /// Deletes those of `ids` that are `tenant`'s and finished (sent,
+    /// blocked, unconfirmed, expired or cancelled), when a product's
+    /// retention period for them ends; returns how many. A message that could
+    /// still go out (a Draft, approved, sending or awaiting a retry) is kept.
+    pub async fn forget(&self, tenant: TenantId, ids: &[MessageId]) -> Result<u64, OutboxError> {
+        let ids: Vec<uuid::Uuid> = ids.iter().map(|id| id.as_uuid()).collect();
+        let forgotten = sqlx::query!(
+            "delete from outbox_messages
+             where tenant_id = $1 and id = any($2)
+               and status in ('sent', 'blocked', 'unconfirmed', 'expired', 'cancelled')",
+            tenant.as_uuid(),
+            &ids,
+        )
+        .execute(&self.pool)
+        .await?
+        .rows_affected();
+        Ok(forgotten)
+    }
+
     /// The message the provider knows as `provider_message_id`, if we sent
     /// one: how a delivery event (G3) finds its tenant. The provider's ID
     /// names the tenant, so this one lookup isn't scoped by one.
