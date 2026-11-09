@@ -2,6 +2,12 @@
 
 Every release, newest first, with what changed and what a product must do to upgrade. Versions follow `AGENTS.md`: while at `0.x`, a breaking change bumps the minor number.
 
+## v0.4.5 (2026-11-09)
+
+- **Fixed: parallel login requests could pass the hourly limits.** `Logins::send_link` counted only login emails already approved, but each is approved after its transaction commits, so requests made at the same moment could all pass `MAX_LINKS_PER_HOUR` and `MAX_ACCOUNT_LINKS_PER_HOUR` (twelve at once sent eleven). Emails to the account's members that aren't approved yet now count too. Found by Kompleto's test of twelve parallel requests when it moved onto `accounts`.
+
+**Upgrading from v0.4.4:** depend on v0.4.5 by the commit its tag points to. No code or schema changes needed.
+
 ## v0.4.4 (2026-11-06)
 
 - **New: `Outbox::forget(tenant, ids)`** deletes those messages that are the tenant's and finished (sent, blocked, unconfirmed, expired or cancelled), for a product whose retention period for them has ended, and returns how many. A message that could still go out (a Draft, approved, sending, or awaiting a retry) is kept, as is any other tenant's.
