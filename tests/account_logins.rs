@@ -144,6 +144,33 @@ async fn send_link_stops_at_the_hourly_limit_per_address(pool: PgPool) {
 }
 
 #[sqlx::test]
+async fn parallel_requests_still_send_at_most_the_hourly_limit(pool: PgPool) {
+    // Each request's email is approved after its transaction commits, so the
+    // limit must count login emails not approved yet too.
+    let clock = clock();
+    account(&pool, &clock).await;
+    let logins = Logins::new(pool.clone(), clock);
+
+    let requests: Vec<_> = (0..12)
+        .map(|_| {
+            let logins = logins.clone();
+            tokio::spawn(async move {
+                logins
+                    .send_link("ana@reyes.test", compose, &NoExtraChecks)
+                    .await
+                    .unwrap()
+            })
+        })
+        .collect();
+    let mut sent = 0;
+    for request in requests {
+        sent += usize::from(request.await.unwrap() == LoginOutcome::Sent);
+    }
+
+    assert_eq!(sent, usize::try_from(MAX_LINKS_PER_HOUR).unwrap());
+}
+
+#[sqlx::test]
 async fn a_link_starts_a_session_for_its_member(pool: PgPool) {
     let clock = clock();
     let tenant = account(&pool, &clock).await;

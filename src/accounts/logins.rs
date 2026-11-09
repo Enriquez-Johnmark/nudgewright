@@ -139,10 +139,17 @@ impl Logins {
         }
         // Counted from the outbox, which keeps the emails of removed members
         // too: removing and adding an address again can't reset its limit.
+        // A login email is approved only after its transaction commits, so
+        // one to a member that isn't approved yet counts too; otherwise
+        // parallel requests could all pass the limit.
         let recent = sqlx::query!(
             r#"select count(*) filter (where lower(to_address) = lower($2)) as "to_address!",
                       count(*) as "account!"
-               from outbox_messages where tenant_id = $1 and approved_by = $4 and created_at > $3"#,
+               from outbox_messages
+               where tenant_id = $1 and created_at > $3
+                 and (approved_by = $4
+                      or (approved_by is null and lower(to_address) in (
+                          select lower(email) from account_members where tenant_id = $1)))"#,
             tenant.as_uuid(),
             member.email,
             now - Duration::hours(1),
